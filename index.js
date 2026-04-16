@@ -34,8 +34,13 @@ async function generateGeminiReply(prompt) {
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
   const result = await model.generateContent(prompt);
+  const responseText = result?.response?.text?.();
 
-  return result.response.text();
+  if (!responseText) {
+    throw new Error('Gemini returned an empty response.');
+  }
+
+  return responseText;
 }
 
 async function handleMessage(msg) {
@@ -62,7 +67,7 @@ async function handleMessage(msg) {
       const media = await MessageMedia.fromUrl(OPTION_3_IMAGE_URL);
       await client.sendMessage(msg.from, media, { caption: OPTION_3_CAPTION });
     } catch (error) {
-      console.error('Failed to send profile image:', error.message);
+      console.error('Failed to send profile image:', error);
       await msg.reply('Sorry, I could not load KB\'s image right now.');
     }
     return;
@@ -85,7 +90,7 @@ async function handleMessage(msg) {
       const aiReply = await generateGeminiReply(prompt);
       await msg.reply(aiReply);
     } catch (error) {
-      console.error('Gemini request failed:', error.message);
+      console.error('Gemini request failed:', error);
       await msg.reply('Sorry, I could not get a response from Gemini right now.');
     }
   }
