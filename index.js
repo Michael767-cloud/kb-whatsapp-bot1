@@ -97,7 +97,11 @@ async function handleMessage(msg) {
 }
 
 client.on('message', async (msg) => {
-  await handleMessage(msg);
+  try {
+    await handleMessage(msg);
+  } catch (error) {
+    console.error('Unhandled message processing error:', error);
+  }
 });
 
 client.initialize();
