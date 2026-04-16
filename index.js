@@ -33,7 +33,12 @@ async function generateGeminiReply(prompt) {
 
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-  const result = await model.generateContent(prompt);
+  let result;
+  try {
+    result = await model.generateContent(prompt);
+  } catch (error) {
+    throw new Error(`Gemini API request failed: ${error.message}`);
+  }
   const responseText = result?.response?.text?.();
 
   if (!responseText) {
@@ -79,7 +84,7 @@ async function handleMessage(msg) {
   }
 
   if (/^ai\b/i.test(text)) {
-    const prompt = text.slice(2).trim();
+    const prompt = text.replace(/^ai\s*/i, '').trim();
 
     if (!prompt) {
       await msg.reply("Please add a prompt after 'AI'. Example: AI explain quantum computing simply.");
